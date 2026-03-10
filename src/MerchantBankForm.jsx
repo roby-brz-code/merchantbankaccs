@@ -1,5 +1,6 @@
 import { useState, useRef } from 'react';
 import { LOGO_URL, COUNTRIES, CURRENCIES, US_STATES, PAYMENT_METHODS } from './constants';
+import { supabase } from './supabase';
 
 const DATA_ENDPOINT = import.meta.env.VITE_DATA_ENDPOINT || '';
 
@@ -267,6 +268,7 @@ export default function MerchantBankForm() {
       if (!form.benefStreet.trim()) e.benefStreet = 'Required';
       if (!form.benefCity.trim()) e.benefCity = 'Required';
       if (!form.benefCountry) e.benefCountry = 'Required';
+      if (!file) e.file = 'Proof of bank account is required';
     }
 
     return e;
@@ -326,7 +328,57 @@ export default function MerchantBankForm() {
     const json = JSON.stringify(payload, null, 2);
     setJsonOutput(json);
 
-    if (DATA_ENDPOINT) {
+    let proofDocumentUrl = '';
+
+    // Upload file to Supabase Storage
+    if (supabase && file) {
+      const fileExt = file.name.split('.').pop();
+      const filePath = `${Date.now()}-${form.merchantName.replace(/\s+/g, '_')}.${fileExt}`;
+      const { error: uploadError } = await supabase.storage
+        .from('proof-documents')
+        .upload(filePath, file, { contentType: file.type });
+      if (!uploadError) {
+        proofDocumentUrl = filePath;
+      }
+    }
+
+    // Save to Supabase DB
+    if (supabase) {
+      try {
+        const { error: dbError } = await supabase
+          .from('merchant_bank_submissions')
+          .insert({
+            merchant_name: form.merchantName,
+            entity_name: form.entityName,
+            contact_name: form.contactName || null,
+            contact_email: form.contactEmail,
+            payment_method: form.paymentMethod,
+            beneficiary_name: form.beneficiaryName,
+            bank_name: form.bankName,
+            bank_country: form.bankCountry,
+            bank_address: form.bankAddress || null,
+            currency: form.currency,
+            routing_number: bankDetails.routingNumber || null,
+            account_number: bankDetails.accountNumber || null,
+            account_type: bankDetails.accountType || null,
+            swift_code: bankDetails.swiftCode || null,
+            iban: bankDetails.iban || null,
+            intermediary_bank: bankDetails.intermediaryBank || null,
+            intermediary_swift: bankDetails.intermediarySwift || null,
+            beneficiary_address: benefParts.join(', '),
+            payment_reference: form.reference || null,
+            notes: form.notes || null,
+            proof_document_url: proofDocumentUrl || null,
+            proof_document_filename: file?.name || null,
+            raw_payload: payload,
+          });
+        if (!dbError) setSubmitStatus('saved');
+        else setSubmitStatus('error');
+      } catch {
+        setSubmitStatus('error');
+      }
+    } else if (DATA_ENDPOINT) {
+      // Fallback: Google Sheets endpoint
       try {
         await fetch(DATA_ENDPOINT, {
           method: 'POST',
@@ -386,61 +438,81 @@ export default function MerchantBankForm() {
     );
   }
 
-  // ── Confirmation Screen ───────────────────────────────────────────────
+  // ── Thank You Screen ─────────────────────────────────────────────────
   if (submitted) {
-    const statusTitle = submitStatus === 'saved' ? 'Saved Successfully' : submitStatus === 'error' ? 'Submission Issue' : 'Details Captured';
-    const statusDesc = submitStatus === 'saved'
-      ? 'Your bank details have been securely submitted.'
-      : submitStatus === 'error'
-        ? 'There was an issue saving your details, but the data has been captured below.'
-        : 'No data endpoint configured — your details are shown below.';
+    const isError = submitStatus === 'error';
 
     return (
       <div className="min-h-screen py-12 px-4">
         <div className="max-w-2xl mx-auto">
-          <div className="bg-white rounded-xl shadow-lg p-8 text-center">
-            {/* Checkmark */}
-            <div className={`w-16 h-16 rounded-full flex items-center justify-center mx-auto mb-4 ${
-              submitStatus === 'error' ? 'bg-yellow-100' : 'bg-green-100'
+          <div className="bg-white rounded-xl shadow-lg p-10 text-center">
+            <Logo />
+
+            {/* Icon */}
+            <div className={`w-20 h-20 rounded-full flex items-center justify-center mx-auto mb-6 ${
+              isError ? 'bg-yellow-100' : 'bg-green-100'
             }`}>
-              <svg className={`w-8 h-8 ${submitStatus === 'error' ? 'text-yellow-600' : 'text-green-600'}`} fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                {submitStatus === 'error'
+              <svg className={`w-10 h-10 ${isError ? 'text-yellow-600' : 'text-green-600'}`} fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                {isError
                   ? <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 9v2m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
                   : <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />}
               </svg>
             </div>
 
-            <h1 className="text-2xl font-bold mb-2" style={{ fontFamily: 'Instrument Serif, serif' }}>{statusTitle}</h1>
-            <p className="text-gray-600 mb-2">{statusDesc}</p>
-            <p className="text-sm text-gray-500 mb-6">
-              {form.merchantName} — {form.paymentMethod} to {form.beneficiaryName}
+            <h1 className="text-3xl mb-3" style={{ fontFamily: 'Instrument Serif, serif' }}>
+              {isError ? 'Something went wrong' : 'Thank you for submitting!'}
+            </h1>
+
+            <p className="text-gray-600 mb-2 text-lg">
+              {isError
+                ? 'There was an issue saving your details. Please try again or contact support.'
+                : 'Your bank details have been securely received.'}
             </p>
 
-            {submitStatus === 'no-endpoint' && (
-              <p className="text-xs text-gray-400 mb-4">
-                Set <code className="bg-gray-100 px-1 rounded">VITE_DATA_ENDPOINT</code> to automatically save submissions.
+            {!isError && (
+              <p className="text-gray-500 text-sm mb-6">
+                We'll review your information and reach out if we need anything else.
               </p>
             )}
 
-            {/* JSON output */}
-            <div className="text-left bg-navy rounded-lg p-4 mb-6 overflow-auto max-h-96">
-              <div className="flex justify-between items-center mb-2">
-                <span className="text-xs text-green-success font-bold uppercase tracking-wider">JSON Output</span>
-                <button
-                  onClick={copyJson}
-                  className="text-xs bg-green-success text-navy px-3 py-1 rounded font-bold hover:opacity-80 transition-opacity"
-                >
-                  {copyLabel}
-                </button>
+            <div className="bg-gray-50 rounded-lg p-4 mb-6 text-left">
+              <div className="grid grid-cols-2 gap-y-2 text-sm">
+                <span className="text-gray-500">Merchant</span>
+                <span className="font-medium">{form.merchantName}</span>
+                <span className="text-gray-500">Entity</span>
+                <span className="font-medium">{form.entityName}</span>
+                <span className="text-gray-500">Payment Method</span>
+                <span className="font-medium">{form.paymentMethod}</span>
+                <span className="text-gray-500">Beneficiary</span>
+                <span className="font-medium">{form.beneficiaryName}</span>
+                <span className="text-gray-500">Bank</span>
+                <span className="font-medium">{form.bankName}</span>
               </div>
-              <pre className="text-green-success text-xs leading-relaxed whitespace-pre-wrap break-all" style={{ fontFamily: 'DM Mono, monospace' }}>
-                {jsonOutput}
-              </pre>
             </div>
+
+            {/* Collapsible JSON */}
+            <details className="text-left mb-6">
+              <summary className="text-xs text-gray-400 cursor-pointer hover:text-gray-600 transition-colors">
+                View raw JSON payload
+              </summary>
+              <div className="bg-navy rounded-lg p-4 mt-2 overflow-auto max-h-72">
+                <div className="flex justify-end mb-2">
+                  <button
+                    onClick={copyJson}
+                    className="text-xs bg-green-success text-navy px-3 py-1 rounded font-bold hover:opacity-80 transition-opacity"
+                  >
+                    {copyLabel}
+                  </button>
+                </div>
+                <pre className="text-green-success text-xs leading-relaxed whitespace-pre-wrap break-all" style={{ fontFamily: 'DM Mono, monospace' }}>
+                  {jsonOutput}
+                </pre>
+              </div>
+            </details>
 
             <button
               onClick={resetForm}
-              className="bg-navy text-white px-6 py-3 rounded-lg font-medium hover:opacity-90 transition-opacity"
+              className="bg-navy text-white px-8 py-3 rounded-lg font-medium hover:opacity-90 transition-opacity"
             >
               Submit Another
             </button>
@@ -469,10 +541,10 @@ export default function MerchantBankForm() {
         <SectionTitle>Merchant Information</SectionTitle>
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
           <Field label="Merchant / Brand Name" required error={errors.merchantName}>
-            <Input value={form.merchantName} onChange={set('merchantName')} placeholder="e.g. Dara Casino" error={errors.merchantName} />
+            <Input value={form.merchantName} onChange={set('merchantName')} placeholder="e.g. Breeze Gaming" error={errors.merchantName} />
           </Field>
           <Field label="Legal Entity Name" required error={errors.entityName}>
-            <Input value={form.entityName} onChange={set('entityName')} placeholder="e.g. Gateway Guardian Admin LLC" error={errors.entityName} />
+            <Input value={form.entityName} onChange={set('entityName')} placeholder="e.g. Breeze Labs Inc." error={errors.entityName} />
           </Field>
         </div>
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
@@ -664,7 +736,7 @@ export default function MerchantBankForm() {
             <SectionTitle>Additional Information</SectionTitle>
 
             {/* File Upload */}
-            <Field label="Proof of Bank Account" error={errors.file} hint="Upload a bank statement, voided check, or bank letter (PDF, PNG, JPG — max 10MB)" className="mb-4">
+            <Field label="Proof of Bank Account" required error={errors.file} hint="Upload a bank statement, voided check, or bank letter (PDF, PNG, JPG — max 10MB)" className="mb-4">
               {!file ? (
                 <div
                   onDragOver={(e) => e.preventDefault()}
