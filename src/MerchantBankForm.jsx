@@ -343,11 +343,6 @@ export default function MerchantBankForm() {
     }
 
     // Save to Supabase DB
-    console.log('Supabase client initialized:', !!supabase);
-    console.log('VITE_SUPABASE_URL:', import.meta.env.VITE_SUPABASE_URL || 'NOT SET');
-    if (!supabase) {
-      alert('Supabase is not connected. Env vars may not be set on Vercel.');
-    }
     if (supabase) {
       try {
         const { error: dbError } = await supabase
@@ -381,12 +376,10 @@ export default function MerchantBankForm() {
           setSubmitStatus('saved');
         } else {
           console.error('Supabase insert error:', dbError);
-          alert(`Supabase error: ${dbError.message}`);
           setSubmitStatus('error');
         }
       } catch (err) {
         console.error('Supabase exception:', err);
-        alert(`Supabase exception: ${err.message}`);
         setSubmitStatus('error');
       }
     } else if (DATA_ENDPOINT) {
