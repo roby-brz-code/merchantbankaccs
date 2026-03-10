@@ -27,8 +27,8 @@ function isUSCountry(country) {
 
 function SectionTitle({ children }) {
   return (
-    <div className="border-b-2 border-navy pb-2 mb-6 mt-10 first:mt-0">
-      <h2 className="text-sm font-bold tracking-widest uppercase">
+    <div className="border-b border-gray-200 pb-3 mb-6 mt-10 first:mt-0">
+      <h2 className="text-[13px] font-semibold text-accent tracking-wide">
         {children}
       </h2>
     </div>
@@ -38,12 +38,12 @@ function SectionTitle({ children }) {
 function Field({ label, required, error, hint, children, className = '' }) {
   return (
     <div className={className}>
-      <label className="block text-sm font-medium mb-1">
+      <label className="block text-[13px] font-medium text-gray-600 mb-1.5">
         {label}
         {required && <span className="text-red-error ml-0.5">*</span>}
       </label>
       {children}
-      {hint && !error && <p className="text-xs text-gray-500 mt-1">{hint}</p>}
+      {hint && !error && <p className="text-xs text-gray-400 mt-1">{hint}</p>}
       {error && <p className="text-xs text-red-error mt-1">{error}</p>}
     </div>
   );
@@ -53,9 +53,9 @@ function Input({ error, ...props }) {
   return (
     <input
       {...props}
-      className={`w-full px-3 py-2 border rounded-md text-sm focus:outline-none focus:ring-2 focus:ring-navy/30 ${
-        error ? 'border-red-error bg-red-50' : 'border-gray-300'
-      } ${props.disabled ? 'bg-gray-100 text-gray-500 cursor-not-allowed' : ''}`}
+      className={`w-full px-3 py-2.5 border rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-accent/20 focus:border-accent/40 transition-colors ${
+        error ? 'border-red-error bg-red-50' : 'border-gray-200 bg-white'
+      } ${props.disabled ? 'bg-gray-50 text-gray-400 cursor-not-allowed' : ''}`}
     />
   );
 }
@@ -64,9 +64,9 @@ function Select({ error, children, ...props }) {
   return (
     <select
       {...props}
-      className={`w-full px-3 py-2 border rounded-md text-sm focus:outline-none focus:ring-2 focus:ring-navy/30 ${
-        error ? 'border-red-error bg-red-50' : 'border-gray-300'
-      } ${props.disabled ? 'bg-gray-100 text-gray-500 cursor-not-allowed' : ''}`}
+      className={`w-full px-3 py-2.5 border rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-accent/20 focus:border-accent/40 transition-colors ${
+        error ? 'border-red-error bg-red-50' : 'border-gray-200 bg-white'
+      } ${props.disabled ? 'bg-gray-50 text-gray-400 cursor-not-allowed' : ''}`}
     >
       {children}
     </select>
@@ -75,9 +75,10 @@ function Select({ error, children, ...props }) {
 
 function Callout({ color, children }) {
   const bg = color === 'blue' ? 'bg-blue-info' : 'bg-yellow-warn';
-  const border = color === 'blue' ? 'border-blue-300' : 'border-yellow-300';
+  const border = color === 'blue' ? 'border-blue-200' : 'border-yellow-200';
+  const text = color === 'blue' ? 'text-blue-700' : 'text-yellow-700';
   return (
-    <div className={`${bg} ${border} border rounded-md p-3 text-sm my-4`}>
+    <div className={`${bg} ${border} ${text} border rounded-lg p-3.5 text-[13px] my-4 leading-relaxed`}>
       {children}
     </div>
   );
@@ -89,7 +90,7 @@ function Logo() {
   const [imgFailed, setImgFailed] = useState(false);
   if (imgFailed) {
     return (
-      <div className="inline-block bg-navy text-white text-xs font-bold tracking-widest px-4 py-2 rounded mb-4">
+      <div className="inline-block bg-navy text-white text-[11px] font-bold tracking-widest px-4 py-2 rounded-md mb-5">
         BREEZE LABS
       </div>
     );
@@ -98,7 +99,7 @@ function Logo() {
     <img
       src={LOGO_URL}
       alt="Breeze Labs"
-      className="h-12 mb-4"
+      className="h-10 mb-5"
       onError={() => setImgFailed(true)}
     />
   );
@@ -455,54 +456,68 @@ export default function MerchantBankForm() {
     return (
       <div className="min-h-screen py-12 px-4">
         <div className="max-w-2xl mx-auto">
-          <div className="bg-white rounded-xl shadow-lg p-10 text-center">
+          <div className="bg-white rounded-xl border border-gray-200 p-10 text-center">
             <Logo />
 
             {/* Icon */}
             <div className={`w-20 h-20 rounded-full flex items-center justify-center mx-auto mb-6 ${
-              isError ? 'bg-yellow-100' : 'bg-green-100'
+              isError ? 'bg-yellow-50' : 'bg-green-50'
             }`}>
-              <svg className={`w-10 h-10 ${isError ? 'text-yellow-600' : 'text-green-600'}`} fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <svg className={`w-10 h-10 ${isError ? 'text-yellow-500' : 'text-green-500'}`} fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 {isError
                   ? <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 9v2m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
                   : <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />}
               </svg>
             </div>
 
-            <h1 className="text-3xl mb-3">
+            <h1 className="text-2xl font-semibold text-navy mb-3">
               {isError ? 'Something went wrong' : 'Thank you for submitting!'}
             </h1>
 
-            <p className="text-gray-600 mb-2 text-lg">
+            <p className="text-gray-500 mb-2 text-[15px]">
               {isError
                 ? 'There was an issue saving your details. Please try again or contact support.'
                 : 'Your bank details have been securely received.'}
             </p>
 
             {!isError && (
-              <p className="text-gray-500 text-sm mb-6">
+              <p className="text-gray-400 text-sm mb-6">
                 We'll review your information and reach out if we need anything else.
               </p>
             )}
 
-            <div className="bg-gray-50 rounded-lg p-4 mb-6 text-left">
-              <div className="grid grid-cols-2 gap-y-2 text-sm">
-                <span className="text-gray-500">Merchant</span>
-                <span className="font-medium">{form.merchantName}</span>
-                <span className="text-gray-500">Entity</span>
-                <span className="font-medium">{form.entityName}</span>
-                <span className="text-gray-500">Payment Method</span>
-                <span className="font-medium">{form.paymentMethod}</span>
-                <span className="text-gray-500">Beneficiary</span>
-                <span className="font-medium">{form.beneficiaryName}</span>
-                <span className="text-gray-500">Bank</span>
-                <span className="font-medium">{form.bankName}</span>
+            <div className="bg-gray-50 rounded-lg p-5 mb-6 text-left">
+              <div className="space-y-3">
+                <div className="flex justify-between text-sm">
+                  <span className="text-gray-400">Merchant</span>
+                  <span className="font-medium text-navy">{form.merchantName}</span>
+                </div>
+                <div className="border-t border-gray-100" />
+                <div className="flex justify-between text-sm">
+                  <span className="text-gray-400">Entity</span>
+                  <span className="font-medium text-navy">{form.entityName}</span>
+                </div>
+                <div className="border-t border-gray-100" />
+                <div className="flex justify-between text-sm">
+                  <span className="text-gray-400">Payment Method</span>
+                  <span className="font-medium text-navy">{form.paymentMethod}</span>
+                </div>
+                <div className="border-t border-gray-100" />
+                <div className="flex justify-between text-sm">
+                  <span className="text-gray-400">Beneficiary</span>
+                  <span className="font-medium text-navy">{form.beneficiaryName}</span>
+                </div>
+                <div className="border-t border-gray-100" />
+                <div className="flex justify-between text-sm">
+                  <span className="text-gray-400">Bank</span>
+                  <span className="font-medium text-navy">{form.bankName}</span>
+                </div>
               </div>
             </div>
 
             <button
               onClick={resetForm}
-              className="bg-navy text-white px-8 py-3 rounded-lg font-medium hover:opacity-90 transition-opacity"
+              className="bg-accent text-white px-8 py-3 rounded-lg font-medium text-sm hover:bg-accent-light transition-colors"
             >
               Submit Another
             </button>
@@ -518,14 +533,14 @@ export default function MerchantBankForm() {
       {/* Header */}
       <div className="text-center mb-8">
         <Logo />
-        <h1 className="text-4xl mb-2" style={{ fontSize: '36px' }}>
+        <h1 className="text-[28px] font-semibold text-navy mb-2">
           Settlement Bank Details
         </h1>
-        <p className="text-gray-500 text-sm">Please provide your banking information for settlement payouts.</p>
+        <p className="text-gray-400 text-sm">Please provide your banking information for settlement payouts.</p>
       </div>
 
       {/* Form Card */}
-      <form ref={formRef} onSubmit={handleSubmit} className="max-w-2xl mx-auto bg-white rounded-xl shadow-lg p-8">
+      <form ref={formRef} onSubmit={handleSubmit} className="max-w-2xl mx-auto bg-white rounded-xl border border-gray-200 p-8">
 
         {/* 1. Merchant Information */}
         <SectionTitle>Merchant Information</SectionTitle>
@@ -556,14 +571,14 @@ export default function MerchantBankForm() {
               key={m.key}
               type="button"
               onClick={() => setPaymentMethod(m.key)}
-              className={`p-4 rounded-lg border-2 text-left transition-all ${
+              className={`p-4 rounded-lg border text-left transition-all ${
                 form.paymentMethod === m.key
-                  ? 'border-navy bg-navy text-white'
-                  : 'border-gray-200 hover:border-navy/30'
+                  ? 'border-accent bg-accent/5 ring-1 ring-accent/20'
+                  : 'border-gray-200 hover:border-gray-300'
               }`}
             >
-              <div className="font-bold text-sm">{m.label}</div>
-              <div className={`text-xs mt-1 ${form.paymentMethod === m.key ? 'text-gray-300' : 'text-gray-500'}`}>{m.desc}</div>
+              <div className={`font-semibold text-sm ${form.paymentMethod === m.key ? 'text-accent' : 'text-navy'}`}>{m.label}</div>
+              <div className={`text-xs mt-1 ${form.paymentMethod === m.key ? 'text-accent/60' : 'text-gray-400'}`}>{m.desc}</div>
             </button>
           ))}
         </div>
@@ -695,7 +710,7 @@ export default function MerchantBankForm() {
         {methodSelected && (
           <>
             <SectionTitle>Beneficiary Address</SectionTitle>
-            <p className="text-xs text-gray-500 -mt-4 mb-4">Registered address of the account holder</p>
+            <p className="text-xs text-gray-400 -mt-4 mb-4">Registered address of the account holder</p>
             <Field label="Street Address" required error={errors.benefStreet} className="mb-4">
               <Input value={form.benefStreet} onChange={set('benefStreet')} error={errors.benefStreet} />
             </Field>
@@ -733,12 +748,12 @@ export default function MerchantBankForm() {
                   onDragOver={(e) => e.preventDefault()}
                   onDrop={handleDrop}
                   onClick={() => fileInputRef.current?.click()}
-                  className="border-2 border-dashed border-gray-300 rounded-lg p-8 text-center cursor-pointer hover:border-navy/40 transition-colors"
+                  className="border border-dashed border-gray-300 rounded-lg p-8 text-center cursor-pointer hover:border-accent/40 hover:bg-accent/[0.02] transition-colors"
                 >
-                  <svg className="w-8 h-8 mx-auto mb-2 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <svg className="w-8 h-8 mx-auto mb-2 text-gray-300" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M7 16a4 4 0 01-.88-7.903A5 5 0 1115.9 6L16 6a5 5 0 011 9.9M15 13l-3-3m0 0l-3 3m3-3v12" />
                   </svg>
-                  <p className="text-sm text-gray-500">Drag & drop or <span className="text-navy font-medium">click to browse</span></p>
+                  <p className="text-sm text-gray-400">Drag & drop or <span className="text-accent font-medium">click to browse</span></p>
                   <input
                     ref={fileInputRef}
                     type="file"
@@ -748,14 +763,14 @@ export default function MerchantBankForm() {
                   />
                 </div>
               ) : (
-                <div className="flex items-center justify-between border border-gray-200 rounded-lg p-3">
-                  <div className="flex items-center gap-2">
-                    <svg className="w-5 h-5 text-navy" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <div className="flex items-center justify-between border border-gray-200 rounded-lg p-3.5">
+                  <div className="flex items-center gap-3">
+                    <svg className="w-5 h-5 text-accent" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                       <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
                     </svg>
                     <div>
-                      <p className="text-sm font-medium">{file.name}</p>
-                      <p className="text-xs text-gray-500">{(file.size / 1024).toFixed(1)} KB</p>
+                      <p className="text-sm font-medium text-navy">{file.name}</p>
+                      <p className="text-xs text-gray-400">{(file.size / 1024).toFixed(1)} KB</p>
                     </div>
                   </div>
                   <button type="button" onClick={removeFile} className="text-red-error text-sm font-medium hover:opacity-70">
@@ -773,7 +788,7 @@ export default function MerchantBankForm() {
                 value={form.notes}
                 onChange={set('notes')}
                 rows={3}
-                className="w-full px-3 py-2 border border-gray-300 rounded-md text-sm focus:outline-none focus:ring-2 focus:ring-navy/30"
+                className="w-full px-3 py-2.5 border border-gray-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-accent/20 focus:border-accent/40 transition-colors"
               />
             </Field>
           </>
@@ -784,7 +799,7 @@ export default function MerchantBankForm() {
           <button
             type="submit"
             disabled={submitting}
-            className="w-full bg-navy text-white py-3 rounded-lg font-medium text-sm hover:opacity-90 transition-opacity disabled:opacity-50"
+            className="w-full bg-accent text-white py-3 rounded-lg font-medium text-sm hover:bg-accent-light transition-colors disabled:opacity-50"
           >
             {submitting ? 'Submitting...' : 'Submit Bank Details'}
           </button>

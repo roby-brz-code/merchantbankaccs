@@ -52,32 +52,32 @@ export default function LinkGenerator() {
   }
 
   return (
-    <div className="min-h-screen bg-gray-50 flex items-start justify-center p-4 pt-12">
-      <div className="bg-white rounded-xl shadow-sm border border-gray-200 w-full max-w-2xl p-8">
+    <div className="min-h-screen flex items-start justify-center p-4 pt-12">
+      <div className="bg-white rounded-xl border border-gray-200 w-full max-w-2xl p-8">
         <div className="mb-6">
-          <div className="inline-block bg-[#0f172a] text-white text-xs font-bold tracking-widest px-4 py-2 rounded mb-4">
+          <div className="inline-block bg-[#1e293b] text-white text-[11px] font-bold tracking-widest px-4 py-2 rounded-md mb-5">
             BREEZE LABS
           </div>
-          <h1 className="text-2xl font-bold text-gray-900">
+          <h1 className="text-[22px] font-semibold text-[#1e293b]">
             Merchant Link Generator
           </h1>
-          <p className="text-sm text-gray-500 mt-1">Generate pre-filled bank details form links for merchants.</p>
+          <p className="text-sm text-gray-400 mt-1">Generate pre-filled bank details form links for merchants.</p>
         </div>
 
         {/* Mode toggle */}
         <div className="flex gap-2 mb-6">
           <button
             onClick={() => setMode('single')}
-            className={`px-4 py-2 text-sm font-medium rounded-md transition ${
-              mode === 'single' ? 'bg-[#0f172a] text-white' : 'bg-gray-100 text-gray-600 hover:bg-gray-200'
+            className={`px-4 py-2 text-sm font-medium rounded-lg transition-colors ${
+              mode === 'single' ? 'bg-[#5b6abf] text-white' : 'bg-gray-100 text-gray-500 hover:bg-gray-200'
             }`}
           >
             Single
           </button>
           <button
             onClick={() => setMode('bulk')}
-            className={`px-4 py-2 text-sm font-medium rounded-md transition ${
-              mode === 'bulk' ? 'bg-[#0f172a] text-white' : 'bg-gray-100 text-gray-600 hover:bg-gray-200'
+            className={`px-4 py-2 text-sm font-medium rounded-lg transition-colors ${
+              mode === 'bulk' ? 'bg-[#5b6abf] text-white' : 'bg-gray-100 text-gray-500 hover:bg-gray-200'
             }`}
           >
             Bulk (CSV)
@@ -88,45 +88,45 @@ export default function LinkGenerator() {
           <div>
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
               <div>
-                <label className="block text-sm font-medium mb-1">Merchant ID <span className="text-red-500">*</span></label>
+                <label className="block text-[13px] font-medium text-gray-600 mb-1.5">Merchant ID <span className="text-red-500">*</span></label>
                 <input
                   value={mchId}
                   onChange={(e) => setMchId(e.target.value)}
                   placeholder="e.g. mch_4c77a5418e54072d"
-                  className="w-full px-3 py-2 border border-gray-300 rounded-md text-sm focus:outline-none focus:ring-2 focus:ring-[#0f172a]/30"
+                  className="w-full px-3 py-2.5 border border-gray-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-[#5b6abf]/20 focus:border-[#5b6abf]/40 transition-colors"
                 />
               </div>
               <div>
-                <label className="block text-sm font-medium mb-1">Merchant Name</label>
+                <label className="block text-[13px] font-medium text-gray-600 mb-1.5">Merchant Name</label>
                 <input
                   value={name}
                   onChange={(e) => setName(e.target.value)}
                   placeholder="e.g. Breeze Gaming"
-                  className="w-full px-3 py-2 border border-gray-300 rounded-md text-sm focus:outline-none focus:ring-2 focus:ring-[#0f172a]/30"
+                  className="w-full px-3 py-2.5 border border-gray-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-[#5b6abf]/20 focus:border-[#5b6abf]/40 transition-colors"
                 />
               </div>
             </div>
             <button
               onClick={generateSingle}
               disabled={!mchId.trim()}
-              className="bg-[#0f172a] text-white px-6 py-2 rounded-md text-sm font-medium hover:bg-[#1e293b] disabled:opacity-40 disabled:cursor-not-allowed transition"
+              className="bg-[#5b6abf] text-white px-6 py-2.5 rounded-lg text-sm font-medium hover:bg-[#6c7bd4] disabled:opacity-40 disabled:cursor-not-allowed transition-colors"
             >
               Generate Link
             </button>
 
             {generatedLink && (
               <div className="mt-6 p-4 bg-gray-50 border border-gray-200 rounded-lg">
-                <label className="block text-xs font-medium text-gray-500 mb-2">Generated Link</label>
+                <label className="block text-xs font-medium text-gray-400 mb-2">Generated Link</label>
                 <div className="flex items-center gap-2">
                   <input
                     readOnly
                     value={generatedLink}
-                    className="flex-1 px-3 py-2 bg-white border border-gray-300 rounded-md text-sm font-mono"
+                    className="flex-1 px-3 py-2.5 bg-white border border-gray-200 rounded-lg text-sm"
                     onClick={(e) => e.target.select()}
                   />
                   <button
                     onClick={copySingle}
-                    className="px-4 py-2 bg-[#0f172a] text-white text-sm rounded-md hover:bg-[#1e293b] transition whitespace-nowrap"
+                    className="px-4 py-2.5 bg-[#5b6abf] text-white text-sm rounded-lg hover:bg-[#6c7bd4] transition-colors whitespace-nowrap"
                   >
                     {copyLabel}
                   </button>
@@ -136,18 +136,18 @@ export default function LinkGenerator() {
           </div>
         ) : (
           <div>
-            <label className="block text-sm font-medium mb-1">Paste CSV <span className="text-gray-400">(one per line: mchID, Merchant Name)</span></label>
+            <label className="block text-[13px] font-medium text-gray-600 mb-1.5">Paste CSV <span className="text-gray-400 font-normal">(one per line: mchID, Merchant Name)</span></label>
             <textarea
               value={csvText}
               onChange={(e) => setCsvText(e.target.value)}
               rows={6}
               placeholder={`mch_4c77a5418e54072d, Breeze Gaming\nmch_8b22f1339a61d0e3, Acme Corp\nmch_1a44c6782b90e5f7, Widget Co`}
-              className="w-full px-3 py-2 border border-gray-300 rounded-md text-sm font-mono focus:outline-none focus:ring-2 focus:ring-[#0f172a]/30"
+              className="w-full px-3 py-2.5 border border-gray-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-[#5b6abf]/20 focus:border-[#5b6abf]/40 transition-colors"
             />
             <button
               onClick={generateBulk}
               disabled={!csvText.trim()}
-              className="mt-3 bg-[#0f172a] text-white px-6 py-2 rounded-md text-sm font-medium hover:bg-[#1e293b] disabled:opacity-40 disabled:cursor-not-allowed transition"
+              className="mt-3 bg-[#5b6abf] text-white px-6 py-2.5 rounded-lg text-sm font-medium hover:bg-[#6c7bd4] disabled:opacity-40 disabled:cursor-not-allowed transition-colors"
             >
               Generate Links
             </button>
@@ -155,25 +155,25 @@ export default function LinkGenerator() {
             {bulkLinks.length > 0 && (
               <div className="mt-6">
                 <div className="flex items-center justify-between mb-3">
-                  <span className="text-sm font-medium text-gray-700">{bulkLinks.length} links generated</span>
+                  <span className="text-sm font-medium text-gray-500">{bulkLinks.length} links generated</span>
                   <button
                     onClick={copyAll}
-                    className="px-4 py-2 bg-[#0f172a] text-white text-sm rounded-md hover:bg-[#1e293b] transition"
+                    className="px-4 py-2 bg-[#5b6abf] text-white text-sm rounded-lg hover:bg-[#6c7bd4] transition-colors"
                   >
                     {bulkCopyLabel}
                   </button>
                 </div>
                 <div className="space-y-2 max-h-80 overflow-y-auto">
                   {bulkLinks.map((l, i) => (
-                    <div key={i} className="p-3 bg-gray-50 border border-gray-200 rounded-lg">
-                      <div className="flex items-center gap-2 mb-1">
-                        <span className="text-xs font-mono text-gray-400">{l.id}</span>
-                        {l.name && <span className="text-xs text-gray-600">- {l.name}</span>}
+                    <div key={i} className="p-3.5 bg-gray-50 border border-gray-200 rounded-lg">
+                      <div className="flex items-center gap-2 mb-1.5">
+                        <span className="text-xs text-gray-400">{l.id}</span>
+                        {l.name && <span className="text-xs text-gray-500">— {l.name}</span>}
                       </div>
                       <input
                         readOnly
                         value={l.link}
-                        className="w-full px-2 py-1 bg-white border border-gray-200 rounded text-xs font-mono text-gray-700"
+                        className="w-full px-2.5 py-1.5 bg-white border border-gray-200 rounded-md text-xs text-gray-600"
                         onClick={(e) => e.target.select()}
                       />
                     </div>
