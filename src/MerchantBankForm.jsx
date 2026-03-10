@@ -343,6 +343,7 @@ export default function MerchantBankForm() {
     }
 
     // Save to Supabase DB
+    console.log('Supabase client initialized:', !!supabase);
     if (supabase) {
       try {
         const { error: dbError } = await supabase
@@ -372,9 +373,16 @@ export default function MerchantBankForm() {
             proof_document_filename: file?.name || null,
             raw_payload: payload,
           });
-        if (!dbError) setSubmitStatus('saved');
-        else setSubmitStatus('error');
-      } catch {
+        if (!dbError) {
+          setSubmitStatus('saved');
+        } else {
+          console.error('Supabase insert error:', dbError);
+          alert(`Supabase error: ${dbError.message}`);
+          setSubmitStatus('error');
+        }
+      } catch (err) {
+        console.error('Supabase exception:', err);
+        alert(`Supabase exception: ${err.message}`);
         setSubmitStatus('error');
       }
     } else if (DATA_ENDPOINT) {
