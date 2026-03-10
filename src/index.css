@@ -1,0 +1,26 @@
+@import "tailwindcss";
+
+@theme {
+  --color-navy: #1a1a2e;
+  --color-navy-light: #2a2a4e;
+  --color-red-error: #e74c3c;
+  --color-green-success: #a8e6cf;
+  --color-blue-info: #dbeafe;
+  --color-yellow-warn: #fef3c7;
+}
+
+body {
+  font-family: 'DM Sans', system-ui, sans-serif;
+  margin: 0;
+  background: linear-gradient(135deg, #f0f0f5 0%, #e8e8f0 50%, #f5f5fa 100%);
+  min-height: 100vh;
+  color: #1a1a2e;
+}
+
+input, select, textarea {
+  font-family: 'DM Mono', monospace;
+}
+
+h1, h2, h3 {
+  font-family: 'Instrument Serif', serif;
+}
