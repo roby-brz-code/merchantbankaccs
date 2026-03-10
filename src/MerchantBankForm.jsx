@@ -1,4 +1,5 @@
-import { useState, useRef } from 'react';
+import { useState, useRef, useMemo } from 'react';
+import { useSearchParams } from 'react-router-dom';
 import { LOGO_URL, COUNTRIES, CURRENCIES, US_STATES, PAYMENT_METHODS } from './constants';
 import { supabase } from './supabase';
 
@@ -144,7 +145,11 @@ const INITIAL_STATE = {
 };
 
 export default function MerchantBankForm() {
-  const [form, setForm] = useState({ ...INITIAL_STATE });
+  const [searchParams] = useSearchParams();
+  const urlMchId = searchParams.get('mchID') || '';
+  const urlName = searchParams.get('name') || '';
+
+  const [form, setForm] = useState({ ...INITIAL_STATE, ...(urlName ? { merchantName: urlName } : {}) });
   const [errors, setErrors] = useState({});
   const [file, setFile] = useState(null);
   const [fileBase64, setFileBase64] = useState('');
@@ -305,6 +310,7 @@ export default function MerchantBankForm() {
 
     const payload = {
       merchant: {
+        mchID: urlMchId || null,
         merchantName: form.merchantName,
         entityName: form.entityName,
         contact: { name: form.contactName, email: form.contactEmail },
@@ -348,6 +354,7 @@ export default function MerchantBankForm() {
         const { error: dbError } = await supabase
           .from('merchant_bank_submissions')
           .insert({
+            mch_id: urlMchId || null,
             merchant_name: form.merchantName,
             entity_name: form.entityName,
             contact_name: form.contactName || null,
@@ -526,7 +533,8 @@ export default function MerchantBankForm() {
         <SectionTitle>Merchant Information</SectionTitle>
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
           <Field label="Merchant / Brand Name" required error={errors.merchantName}>
-            <Input value={form.merchantName} onChange={set('merchantName')} placeholder="e.g. Breeze Gaming" error={errors.merchantName} />
+            <Input value={form.merchantName} onChange={set('merchantName')} placeholder="e.g. Breeze Gaming" error={errors.merchantName} disabled={!!urlName} />
+            {urlMchId && <p className="text-xs text-gray-400 mt-1">ID: {urlMchId}</p>}
           </Field>
           <Field label="Legal Entity Name" required error={errors.entityName}>
             <Input value={form.entityName} onChange={set('entityName')} placeholder="e.g. Breeze Labs Inc." error={errors.entityName} />

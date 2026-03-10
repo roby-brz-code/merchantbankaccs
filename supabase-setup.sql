@@ -4,6 +4,7 @@
 create table if not exists merchant_bank_submissions (
   id uuid default gen_random_uuid() primary key,
   created_at timestamptz default now(),
+  mch_id text,
   merchant_name text not null,
   entity_name text not null,
   contact_name text,
