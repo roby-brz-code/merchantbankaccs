@@ -10,7 +10,7 @@
 }
 
 body {
-  font-family: 'DM Sans', system-ui, sans-serif;
+  font-family: 'Inter', system-ui, sans-serif;
   margin: 0;
   background: linear-gradient(135deg, #f0f0f5 0%, #e8e8f0 50%, #f5f5fa 100%);
   min-height: 100vh;
@@ -18,9 +18,9 @@ body {
 }
 
 input, select, textarea {
-  font-family: 'DM Mono', monospace;
+  font-family: 'Inter', system-ui, sans-serif;
 }
 
 h1, h2, h3 {
-  font-family: 'Instrument Serif', serif;
+  font-family: 'Inter', system-ui, sans-serif;
 }

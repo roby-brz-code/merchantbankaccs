@@ -28,7 +28,7 @@ function isUSCountry(country) {
 function SectionTitle({ children }) {
   return (
     <div className="border-b-2 border-navy pb-2 mb-6 mt-10 first:mt-0">
-      <h2 className="text-sm font-bold tracking-widest uppercase" style={{ fontFamily: 'DM Sans, sans-serif' }}>
+      <h2 className="text-sm font-bold tracking-widest uppercase">
         {children}
       </h2>
     </div>
@@ -67,7 +67,6 @@ function Select({ error, children, ...props }) {
       className={`w-full px-3 py-2 border rounded-md text-sm focus:outline-none focus:ring-2 focus:ring-navy/30 ${
         error ? 'border-red-error bg-red-50' : 'border-gray-300'
       } ${props.disabled ? 'bg-gray-100 text-gray-500 cursor-not-allowed' : ''}`}
-      style={{ fontFamily: 'DM Mono, monospace' }}
     >
       {children}
     </select>
@@ -90,8 +89,7 @@ function Logo() {
   const [imgFailed, setImgFailed] = useState(false);
   if (imgFailed) {
     return (
-      <div className="inline-block bg-navy text-white text-xs font-bold tracking-widest px-4 py-2 rounded mb-4"
-           style={{ fontFamily: 'DM Sans, sans-serif' }}>
+      <div className="inline-block bg-navy text-white text-xs font-bold tracking-widest px-4 py-2 rounded mb-4">
         BREEZE LABS
       </div>
     );
@@ -471,7 +469,7 @@ export default function MerchantBankForm() {
               </svg>
             </div>
 
-            <h1 className="text-3xl mb-3" style={{ fontFamily: 'Instrument Serif, serif' }}>
+            <h1 className="text-3xl mb-3">
               {isError ? 'Something went wrong' : 'Thank you for submitting!'}
             </h1>
 
@@ -520,7 +518,7 @@ export default function MerchantBankForm() {
       {/* Header */}
       <div className="text-center mb-8">
         <Logo />
-        <h1 className="text-4xl mb-2" style={{ fontFamily: 'Instrument Serif, serif', fontSize: '36px' }}>
+        <h1 className="text-4xl mb-2" style={{ fontSize: '36px' }}>
           Settlement Bank Details
         </h1>
         <p className="text-gray-500 text-sm">Please provide your banking information for settlement payouts.</p>
@@ -776,7 +774,6 @@ export default function MerchantBankForm() {
                 onChange={set('notes')}
                 rows={3}
                 className="w-full px-3 py-2 border border-gray-300 rounded-md text-sm focus:outline-none focus:ring-2 focus:ring-navy/30"
-                style={{ fontFamily: 'DM Mono, monospace' }}
               />
             </Field>
           </>

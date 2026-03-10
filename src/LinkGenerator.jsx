@@ -55,11 +55,10 @@ export default function LinkGenerator() {
     <div className="min-h-screen bg-gray-50 flex items-start justify-center p-4 pt-12">
       <div className="bg-white rounded-xl shadow-sm border border-gray-200 w-full max-w-2xl p-8">
         <div className="mb-6">
-          <div className="inline-block bg-[#0f172a] text-white text-xs font-bold tracking-widest px-4 py-2 rounded mb-4"
-               style={{ fontFamily: 'DM Sans, sans-serif' }}>
+          <div className="inline-block bg-[#0f172a] text-white text-xs font-bold tracking-widest px-4 py-2 rounded mb-4">
             BREEZE LABS
           </div>
-          <h1 className="text-2xl font-bold text-gray-900" style={{ fontFamily: 'DM Sans, sans-serif' }}>
+          <h1 className="text-2xl font-bold text-gray-900">
             Merchant Link Generator
           </h1>
           <p className="text-sm text-gray-500 mt-1">Generate pre-filled bank details form links for merchants.</p>
@@ -95,7 +94,6 @@ export default function LinkGenerator() {
                   onChange={(e) => setMchId(e.target.value)}
                   placeholder="e.g. mch_4c77a5418e54072d"
                   className="w-full px-3 py-2 border border-gray-300 rounded-md text-sm focus:outline-none focus:ring-2 focus:ring-[#0f172a]/30"
-                  style={{ fontFamily: 'DM Mono, monospace' }}
                 />
               </div>
               <div>
