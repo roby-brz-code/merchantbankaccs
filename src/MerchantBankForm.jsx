@@ -490,26 +490,6 @@ export default function MerchantBankForm() {
               </div>
             </div>
 
-            {/* Collapsible JSON */}
-            <details className="text-left mb-6">
-              <summary className="text-xs text-gray-400 cursor-pointer hover:text-gray-600 transition-colors">
-                View raw JSON payload
-              </summary>
-              <div className="bg-navy rounded-lg p-4 mt-2 overflow-auto max-h-72">
-                <div className="flex justify-end mb-2">
-                  <button
-                    onClick={copyJson}
-                    className="text-xs bg-green-success text-navy px-3 py-1 rounded font-bold hover:opacity-80 transition-opacity"
-                  >
-                    {copyLabel}
-                  </button>
-                </div>
-                <pre className="text-green-success text-xs leading-relaxed whitespace-pre-wrap break-all" style={{ fontFamily: 'DM Mono, monospace' }}>
-                  {jsonOutput}
-                </pre>
-              </div>
-            </details>
-
             <button
               onClick={resetForm}
               className="bg-navy text-white px-8 py-3 rounded-lg font-medium hover:opacity-90 transition-opacity"
