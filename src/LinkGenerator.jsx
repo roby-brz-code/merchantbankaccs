@@ -3,13 +3,11 @@ import { useState } from 'react';
 const BASE_URL = window.location.origin;
 
 export default function LinkGenerator() {
-  const [mode, setMode] = useState('single'); // 'single' | 'bulk'
+  const [mode, setMode] = useState('single');
   const [mchId, setMchId] = useState('');
   const [name, setName] = useState('');
   const [generatedLink, setGeneratedLink] = useState('');
   const [copyLabel, setCopyLabel] = useState('Copy');
-
-  // Bulk mode
   const [csvText, setCsvText] = useState('');
   const [bulkLinks, setBulkLinks] = useState([]);
   const [bulkCopyLabel, setBulkCopyLabel] = useState('Copy All');
@@ -21,164 +19,95 @@ export default function LinkGenerator() {
     return `${BASE_URL}/?${params.toString()}`;
   }
 
-  function generateSingle() {
-    if (!mchId.trim()) return;
-    setGeneratedLink(buildLink(mchId, name));
-  }
+  function generateSingle() { if (!mchId.trim()) return; setGeneratedLink(buildLink(mchId, name)); }
 
   function generateBulk() {
     const lines = csvText.trim().split('\n').filter(Boolean);
-    const links = lines.map((line) => {
-      const [id, ...rest] = line.split(',');
-      const merchantName = rest.join(',').trim();
-      return { id: id.trim(), name: merchantName, link: buildLink(id, merchantName) };
-    });
-    setBulkLinks(links);
+    setBulkLinks(lines.map((line) => { const [id, ...rest] = line.split(','); const merchantName = rest.join(',').trim(); return { id: id.trim(), name: merchantName, link: buildLink(id, merchantName) }; }));
   }
 
-  function copySingle() {
-    navigator.clipboard.writeText(generatedLink).then(() => {
-      setCopyLabel('Copied!');
-      setTimeout(() => setCopyLabel('Copy'), 2000);
-    });
-  }
+  function copySingle() { navigator.clipboard.writeText(generatedLink).then(() => { setCopyLabel('Copied!'); setTimeout(() => setCopyLabel('Copy'), 2000); }); }
+  function copyAll() { const text = bulkLinks.map((l) => `${l.id}\t${l.name}\t${l.link}`).join('\n'); navigator.clipboard.writeText(text).then(() => { setBulkCopyLabel('Copied!'); setTimeout(() => setBulkCopyLabel('Copy All'), 2000); }); }
 
-  function copyAll() {
-    const text = bulkLinks.map((l) => `${l.id}\t${l.name}\t${l.link}`).join('\n');
-    navigator.clipboard.writeText(text).then(() => {
-      setBulkCopyLabel('Copied!');
-      setTimeout(() => setBulkCopyLabel('Copy All'), 2000);
-    });
-  }
+  const inputCls = "w-full px-3 py-2.5 border border-[#E2E8F0] rounded-[12px] text-[12px] text-[#0F172A] focus:outline-none focus:ring-2 focus:ring-[#2F6DF6]/20 focus:border-[#2F6DF6]/50 transition-colors";
 
   return (
     <div className="min-h-screen flex items-start justify-center p-6 pt-12">
-      <div className="bg-white rounded-xl border border-gray-200 shadow-sm w-full max-w-2xl p-8">
+      <div className="bg-white rounded-[12px] border border-[#E2E8F0] w-full max-w-2xl p-8" style={{ boxShadow: '0 1px 4px rgba(0,0,0,0.04)' }}>
         <div className="mb-6">
           <div className="flex items-center gap-2.5 mb-5">
-            <div className="w-8 h-8 rounded-lg bg-emerald-500 flex items-center justify-center">
-              <span className="text-white text-xs font-bold">B</span>
+            <div className="w-8 h-8 rounded-[10px] bg-[#2F6DF6] flex items-center justify-center">
+              <span className="text-white text-[11px] font-bold">B</span>
             </div>
-            <span className="text-lg font-semibold text-gray-900">Breeze Finance</span>
+            <span className="text-[18px] font-semibold text-[#0F172A] tracking-[-0.015em]">Breeze</span>
           </div>
-          <h1 className="text-lg font-semibold text-gray-900">
-            Merchant Link Generator
-          </h1>
-          <p className="text-sm text-gray-500 mt-1">Generate pre-filled bank details form links for merchants.</p>
+          <h1 className="text-[22px] font-bold text-[#0F172A] tracking-[-0.015em]">Merchant link generator</h1>
+          <p className="text-[12px] text-[#334155] mt-1">Generate pre-filled bank details form links for merchants.</p>
         </div>
 
         {/* Mode toggle */}
         <div className="flex gap-2 mb-6">
-          <button
-            onClick={() => setMode('single')}
-            className={`px-3 py-2.5 text-sm font-medium rounded-lg transition-colors ${
-              mode === 'single' ? 'bg-emerald-50 text-emerald-500' : 'text-gray-600 hover:bg-gray-50 hover:text-gray-900'
-            }`}
-          >
-            Single
-          </button>
-          <button
-            onClick={() => setMode('bulk')}
-            className={`px-3 py-2.5 text-sm font-medium rounded-lg transition-colors ${
-              mode === 'bulk' ? 'bg-emerald-50 text-emerald-500' : 'text-gray-600 hover:bg-gray-50 hover:text-gray-900'
-            }`}
-          >
-            Bulk (CSV)
-          </button>
+          {['single', 'bulk'].map(m => (
+            <button key={m} onClick={() => setMode(m)}
+              className={`px-3 py-2 text-[12px] font-medium rounded-[12px] transition-colors ${
+                mode === m ? 'bg-[#EDF4FA] text-[#2F6DF6]' : 'text-[#64748B] hover:bg-[#F8FAFC] hover:text-[#0F172A]'
+              }`}>
+              {m === 'single' ? 'Single' : 'Bulk (CSV)'}
+            </button>
+          ))}
         </div>
 
         {mode === 'single' ? (
           <div>
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
               <div>
-                <label className="block text-sm font-medium text-gray-500 mb-1.5">Merchant ID <span className="text-red-500">*</span></label>
-                <input
-                  value={mchId}
-                  onChange={(e) => setMchId(e.target.value)}
-                  placeholder="e.g. mch_4c77a5418e54072d"
-                  className="w-full px-3 py-2.5 border border-gray-200 rounded-xl text-sm text-gray-900 focus:outline-none focus:ring-2 focus:ring-emerald-500/20 focus:border-emerald-500/40 transition-colors"
-                />
+                <label className="block text-[11px] font-medium text-[#64748B] mb-1.5">Merchant ID <span className="text-[#DC2626]">*</span></label>
+                <input value={mchId} onChange={(e) => setMchId(e.target.value)} placeholder="e.g. mch_4c77a5418e54072d" className={inputCls} />
               </div>
               <div>
-                <label className="block text-sm font-medium text-gray-500 mb-1.5">Merchant Name</label>
-                <input
-                  value={name}
-                  onChange={(e) => setName(e.target.value)}
-                  placeholder="e.g. Breeze Gaming"
-                  className="w-full px-3 py-2.5 border border-gray-200 rounded-xl text-sm text-gray-900 focus:outline-none focus:ring-2 focus:ring-emerald-500/20 focus:border-emerald-500/40 transition-colors"
-                />
+                <label className="block text-[11px] font-medium text-[#64748B] mb-1.5">Merchant Name</label>
+                <input value={name} onChange={(e) => setName(e.target.value)} placeholder="e.g. Breeze Gaming" className={inputCls} />
               </div>
             </div>
-            <button
-              onClick={generateSingle}
-              disabled={!mchId.trim()}
-              className="bg-emerald-500 text-white px-6 py-2.5 rounded-lg text-sm font-medium hover:bg-emerald-600 disabled:opacity-40 disabled:cursor-not-allowed transition-colors"
-            >
-              Generate Link
+            <button onClick={generateSingle} disabled={!mchId.trim()}
+              className="bg-[#2F6DF6] text-white px-6 py-2.5 rounded-[12px] text-[12px] font-semibold hover:bg-[#1F3F8E] disabled:opacity-40 disabled:cursor-not-allowed transition-colors">
+              Generate link
             </button>
 
             {generatedLink && (
-              <div className="mt-6 p-4 bg-gray-50/60 border border-gray-200 rounded-xl">
-                <label className="block text-xs font-medium text-gray-500 mb-2">Generated Link</label>
+              <div className="mt-6 p-4 bg-[#F8FAFC] border border-[#E2E8F0] rounded-[12px]">
+                <label className="block text-[9.5px] font-semibold uppercase tracking-[0.1em] text-[#4A7DFF] mb-2">Generated link</label>
                 <div className="flex items-center gap-2">
-                  <input
-                    readOnly
-                    value={generatedLink}
-                    className="flex-1 px-3 py-2.5 bg-white border border-gray-200 rounded-xl text-sm text-gray-700"
-                    onClick={(e) => e.target.select()}
-                  />
-                  <button
-                    onClick={copySingle}
-                    className="px-4 py-2.5 bg-emerald-500 text-white text-sm rounded-lg hover:bg-emerald-600 transition-colors whitespace-nowrap"
-                  >
-                    {copyLabel}
-                  </button>
+                  <input readOnly value={generatedLink} className="flex-1 px-3 py-2.5 bg-white border border-[#E2E8F0] rounded-[12px] text-[12px] text-[#334155]" onClick={(e) => e.target.select()} />
+                  <button onClick={copySingle} className="px-4 py-2.5 bg-[#2F6DF6] text-white text-[12px] font-semibold rounded-[12px] hover:bg-[#1F3F8E] transition-colors whitespace-nowrap">{copyLabel}</button>
                 </div>
               </div>
             )}
           </div>
         ) : (
           <div>
-            <label className="block text-sm font-medium text-gray-500 mb-1.5">Paste CSV <span className="text-gray-400 font-normal">(one per line: mchID, Merchant Name)</span></label>
-            <textarea
-              value={csvText}
-              onChange={(e) => setCsvText(e.target.value)}
-              rows={6}
-              placeholder={`mch_4c77a5418e54072d, Breeze Gaming\nmch_8b22f1339a61d0e3, Acme Corp\nmch_1a44c6782b90e5f7, Widget Co`}
-              className="w-full px-3 py-2.5 border border-gray-200 rounded-xl text-sm text-gray-900 focus:outline-none focus:ring-2 focus:ring-emerald-500/20 focus:border-emerald-500/40 transition-colors"
-            />
-            <button
-              onClick={generateBulk}
-              disabled={!csvText.trim()}
-              className="mt-3 bg-emerald-500 text-white px-6 py-2.5 rounded-lg text-sm font-medium hover:bg-emerald-600 disabled:opacity-40 disabled:cursor-not-allowed transition-colors"
-            >
-              Generate Links
+            <label className="block text-[11px] font-medium text-[#64748B] mb-1.5">Paste CSV <span className="text-[#64748B] font-normal">(one per line: mchID, Merchant Name)</span></label>
+            <textarea value={csvText} onChange={(e) => setCsvText(e.target.value)} rows={6}
+              placeholder={`mch_4c77a5418e54072d, Breeze Gaming\nmch_8b22f1339a61d0e3, Acme Corp\nmch_1a44c6782b90e5f7, Widget Co`} className={inputCls} />
+            <button onClick={generateBulk} disabled={!csvText.trim()}
+              className="mt-3 bg-[#2F6DF6] text-white px-6 py-2.5 rounded-[12px] text-[12px] font-semibold hover:bg-[#1F3F8E] disabled:opacity-40 disabled:cursor-not-allowed transition-colors">
+              Generate links
             </button>
 
             {bulkLinks.length > 0 && (
               <div className="mt-6">
                 <div className="flex items-center justify-between mb-3">
-                  <span className="text-sm font-medium text-gray-500">{bulkLinks.length} links generated</span>
-                  <button
-                    onClick={copyAll}
-                    className="px-4 py-2 bg-emerald-500 text-white text-sm rounded-lg hover:bg-emerald-600 transition-colors"
-                  >
-                    {bulkCopyLabel}
-                  </button>
+                  <span className="text-[12px] font-medium text-[#64748B]">{bulkLinks.length} links generated</span>
+                  <button onClick={copyAll} className="px-4 py-2 bg-[#2F6DF6] text-white text-[12px] font-semibold rounded-[12px] hover:bg-[#1F3F8E] transition-colors">{bulkCopyLabel}</button>
                 </div>
                 <div className="space-y-2 max-h-80 overflow-y-auto">
                   {bulkLinks.map((l, i) => (
-                    <div key={i} className="p-3.5 bg-gray-50/60 border border-gray-200 rounded-xl">
+                    <div key={i} className="p-3.5 bg-[#F8FAFC] border border-[#E2E8F0] rounded-[12px]">
                       <div className="flex items-center gap-2 mb-1.5">
-                        <span className="text-xs text-gray-400">{l.id}</span>
-                        {l.name && <span className="text-xs text-gray-500">— {l.name}</span>}
+                        <span className="text-[10px] text-[#64748B]">{l.id}</span>
+                        {l.name && <span className="text-[10px] text-[#334155]">— {l.name}</span>}
                       </div>
-                      <input
-                        readOnly
-                        value={l.link}
-                        className="w-full px-2.5 py-1.5 bg-white border border-gray-200 rounded-lg text-xs text-gray-700"
-                        onClick={(e) => e.target.select()}
-                      />
+                      <input readOnly value={l.link} className="w-full px-2.5 py-1.5 bg-white border border-[#E2E8F0] rounded-[10px] text-[10px] text-[#334155]" onClick={(e) => e.target.select()} />
                     </div>
                   ))}
                 </div>
