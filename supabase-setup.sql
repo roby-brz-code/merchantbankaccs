@@ -39,6 +39,13 @@ create policy "Allow anonymous inserts"
   to anon
   with check (true);
 
+-- Allow anonymous reads (limited to checking if mch_id already exists)
+create policy "Allow anonymous reads by mch_id"
+  on merchant_bank_submissions
+  for select
+  to anon
+  using (mch_id is not null);
+
 -- 3. Create the storage bucket for proof documents
 insert into storage.buckets (id, name, public)
 values ('proof-documents', 'proof-documents', false)

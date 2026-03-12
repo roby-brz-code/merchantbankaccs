@@ -1,4 +1,4 @@
-import { useState, useRef, useMemo } from 'react';
+import { useState, useRef, useMemo, useEffect } from 'react';
 import { useSearchParams } from 'react-router-dom';
 import { LOGO_URL, COUNTRIES, CURRENCIES, US_STATES, PAYMENT_METHODS } from './constants';
 import { supabase } from './supabase';
@@ -161,8 +161,36 @@ export default function MerchantBankForm() {
   const [jsonOutput, setJsonOutput] = useState('');
   const [copyLabel, setCopyLabel] = useState('Copy JSON');
   const [submitting, setSubmitting] = useState(false);
+  const [existingSubmission, setExistingSubmission] = useState(null); // null = loading/not checked, false = none found, object = existing
+  const [checkingExisting, setCheckingExisting] = useState(!!urlMchId);
   const formRef = useRef(null);
   const fileInputRef = useRef(null);
+
+  // Check if merchant already has bank details on file
+  useEffect(() => {
+    if (!urlMchId || !supabase) {
+      setCheckingExisting(false);
+      return;
+    }
+    (async () => {
+      try {
+        const { data, error } = await supabase
+          .from('merchant_bank_submissions')
+          .select('id, merchant_name, payment_method, bank_name, created_at')
+          .eq('mch_id', urlMchId)
+          .order('created_at', { ascending: false })
+          .limit(1);
+        if (!error && data && data.length > 0) {
+          setExistingSubmission(data[0]);
+        } else {
+          setExistingSubmission(false);
+        }
+      } catch {
+        setExistingSubmission(false);
+      }
+      setCheckingExisting(false);
+    })();
+  }, [urlMchId]);
 
   const domestic = isDomestic(form.paymentMethod);
   const methodSelected = !!form.paymentMethod;
@@ -449,6 +477,69 @@ export default function MerchantBankForm() {
       <Field label="State / Province" error={error}>
         <Input value={form[field]} onChange={set(field)} placeholder="State / Province" error={error} />
       </Field>
+    );
+  }
+
+  // ── Loading check ──────────────────────────────────────────────────
+  if (checkingExisting) {
+    return (
+      <div className="min-h-screen flex items-center justify-center">
+        <div className="text-center">
+          <div className="w-8 h-8 border-2 border-gray-200 border-t-emerald-primary rounded-full animate-spin mx-auto mb-3" />
+          <p className="text-sm text-gray-500">Checking merchant details...</p>
+        </div>
+      </div>
+    );
+  }
+
+  // ── Already on file screen ────────────────────────────────────────
+  if (existingSubmission) {
+    const sub = existingSubmission;
+    const submittedDate = new Date(sub.created_at).toLocaleDateString('en-US', { year: 'numeric', month: 'long', day: 'numeric' });
+
+    return (
+      <div className="min-h-screen py-12 px-4">
+        <div className="max-w-2xl mx-auto">
+          <div className="bg-white rounded-xl border border-gray-200 shadow-sm p-10 text-center">
+            <Logo />
+
+            <div className="w-16 h-16 rounded-full bg-amber-50 flex items-center justify-center mx-auto mb-5">
+              <svg className="w-8 h-8 text-amber-warn" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+              </svg>
+            </div>
+
+            <h1 className="text-lg font-semibold text-gray-900 mb-2">
+              Bank details already on file
+            </h1>
+
+            <p className="text-gray-500 text-sm mb-6">
+              We already have bank account information for <span className="font-semibold text-gray-900">{sub.merchant_name || urlName}</span>.
+            </p>
+
+            <div className="bg-white rounded-xl border border-gray-200 p-5 mb-6 text-left">
+              <div className="space-y-0">
+                <div className="flex justify-between py-3 border-b border-gray-100">
+                  <span className="text-sm text-gray-500">Payment Method</span>
+                  <span className="text-sm font-semibold text-gray-900">{sub.payment_method}</span>
+                </div>
+                <div className="flex justify-between py-3 border-b border-gray-100">
+                  <span className="text-sm text-gray-500">Bank</span>
+                  <span className="text-sm font-semibold text-gray-900">{sub.bank_name}</span>
+                </div>
+                <div className="flex justify-between py-3">
+                  <span className="text-sm text-gray-500">Submitted</span>
+                  <span className="text-sm font-semibold text-gray-900">{submittedDate}</span>
+                </div>
+              </div>
+            </div>
+
+            <div className="bg-amber-50 border border-amber-200 rounded-xl p-4 text-sm text-amber-700 text-left">
+              If your bank details need to be changed, please reach out to <a href="mailto:roby@breeze.com" className="font-semibold underline">roby@breeze.com</a> to request an update.
+            </div>
+          </div>
+        </div>
+      </div>
     );
   }
 
