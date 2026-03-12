@@ -11,6 +11,14 @@ function isDomestic(method) {
   return method === 'ACH' || method === 'FEDWIRE';
 }
 
+function isCrypto(method) {
+  return method === 'USDC_POLYGON';
+}
+
+function validateWalletAddress(addr) {
+  return /^0x[a-fA-F0-9]{40}$/.test(addr);
+}
+
 function validateEmail(email) {
   return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email);
 }
@@ -137,6 +145,7 @@ const INITIAL_STATE = {
   benefState: '',
   benefZip: '',
   benefCountry: 'United States',
+  walletAddress: '',
   reference: '',
   notes: '',
 };
@@ -187,7 +196,9 @@ export default function MerchantBankForm() {
   }, [urlMchId]);
 
   const domestic = isDomestic(form.paymentMethod);
+  const crypto = isCrypto(form.paymentMethod);
   const methodSelected = !!form.paymentMethod;
+  const needsBankInfo = methodSelected && !crypto;
 
   function setPaymentMethod(method) {
     const updates = { paymentMethod: method };
@@ -259,7 +270,11 @@ export default function MerchantBankForm() {
       if (!form.intlAccountNumber.trim() && !form.iban.trim()) { e.intlAccountNumber = 'Provide account number or IBAN'; e.iban = 'Provide IBAN or account number'; }
       if (form.iban.trim() && !validateIBAN(form.iban)) e.iban = 'Invalid IBAN format';
     }
-    if (methodSelected) {
+    if (form.paymentMethod === 'USDC_POLYGON') {
+      if (!form.walletAddress.trim()) e.walletAddress = 'Required';
+      else if (!validateWalletAddress(form.walletAddress.trim())) e.walletAddress = 'Must be a valid EVM address (0x + 40 hex characters)';
+    }
+    if (needsBankInfo) {
       if (!form.beneficiaryName.trim()) e.beneficiaryName = 'Required';
       if (!form.bankName.trim()) e.bankName = 'Required';
       if (!form.bankCountry) e.bankCountry = 'Required';
@@ -277,8 +292,11 @@ export default function MerchantBankForm() {
     const errs = validate();
     if (Object.keys(errs).length > 0) { setErrors(errs); window.scrollTo({ top: 0, behavior: 'smooth' }); return; }
     setSubmitting(true);
-    const bankDetails = { beneficiaryName: form.beneficiaryName, bankName: form.bankName, bankCountry: form.bankCountry, currency: form.currency };
-    if (form.bankAddress) bankDetails.bankAddress = form.bankAddress;
+    const bankDetails = {};
+    if (!crypto) {
+      Object.assign(bankDetails, { beneficiaryName: form.beneficiaryName, bankName: form.bankName, bankCountry: form.bankCountry, currency: form.currency });
+      if (form.bankAddress) bankDetails.bankAddress = form.bankAddress;
+    }
     if (form.paymentMethod === 'ACH' || form.paymentMethod === 'FEDWIRE') { bankDetails.routingNumber = form.routingNumber; bankDetails.accountNumber = form.accountNumber; bankDetails.accountType = form.accountType; }
     if (form.paymentMethod === 'INTERNATIONAL WIRE') {
       bankDetails.swiftCode = form.swiftCode;
@@ -287,7 +305,12 @@ export default function MerchantBankForm() {
       if (form.intermediaryBank) bankDetails.intermediaryBank = form.intermediaryBank;
       if (form.intermediarySwift) bankDetails.intermediarySwift = form.intermediarySwift;
     }
-    const benefParts = [form.benefStreet, form.benefCity, form.benefState, form.benefZip, form.benefCountry].filter(Boolean);
+    if (crypto) {
+      bankDetails.walletAddress = form.walletAddress.trim();
+      bankDetails.network = 'Polygon';
+      bankDetails.token = 'USDC';
+    }
+    const benefParts = crypto ? [] : [form.benefStreet, form.benefCity, form.benefState, form.benefZip, form.benefCountry].filter(Boolean);
     const payload = {
       merchant: { mchID: urlMchId || null, merchantName: form.merchantName, entityName: form.entityName, contact: { name: form.contactName, email: form.contactEmail } },
       paymentMethod: form.paymentMethod, bankDetails, beneficiaryAddress: benefParts.join(', '), reference: form.reference, notes: form.notes, submittedAt: new Date().toISOString(),
@@ -306,9 +329,10 @@ export default function MerchantBankForm() {
       try {
         const { error: dbError } = await supabase.from('merchant_bank_submissions').insert({
           mch_id: urlMchId || null, merchant_name: form.merchantName, entity_name: form.entityName, contact_name: form.contactName || null, contact_email: form.contactEmail,
-          payment_method: form.paymentMethod, beneficiary_name: form.beneficiaryName, bank_name: form.bankName, bank_country: form.bankCountry, bank_address: form.bankAddress || null,
-          currency: form.currency, routing_number: bankDetails.routingNumber || null, account_number: bankDetails.accountNumber || null, account_type: bankDetails.accountType || null,
+          payment_method: form.paymentMethod, beneficiary_name: form.beneficiaryName || null, bank_name: form.bankName || null, bank_country: form.bankCountry || null, bank_address: form.bankAddress || null,
+          currency: crypto ? 'USDC' : (form.currency || null), routing_number: bankDetails.routingNumber || null, account_number: bankDetails.accountNumber || null, account_type: bankDetails.accountType || null,
           swift_code: bankDetails.swiftCode || null, iban: bankDetails.iban || null, intermediary_bank: bankDetails.intermediaryBank || null, intermediary_swift: bankDetails.intermediarySwift || null,
+          wallet_address: bankDetails.walletAddress || null, wallet_network: crypto ? 'Polygon' : null,
           beneficiary_address: benefParts.join(', '), payment_reference: form.reference || null, notes: form.notes || null,
           proof_document_url: proofDocumentUrl || null, proof_document_filename: file?.name || null, raw_payload: payload,
         });
@@ -422,7 +446,7 @@ export default function MerchantBankForm() {
             </p>
             {!isError && <p className="text-[#64748B] text-[12px] mb-6">We'll review your information and reach out if we need anything else.</p>}
             <div className="bg-white rounded-[12px] border border-divider p-5 mb-6 text-left">
-              {[['Merchant', form.merchantName], ['Entity', form.entityName], ['Payment Method', form.paymentMethod], ['Beneficiary', form.beneficiaryName], ['Bank', form.bankName]].map(([label, val], i, arr) => (
+              {[['Merchant', form.merchantName], ['Entity', form.entityName], ['Payment Method', form.paymentMethod === 'USDC_POLYGON' ? 'USDC on Polygon' : form.paymentMethod], ...(crypto ? [['Wallet', form.walletAddress]] : [['Beneficiary', form.beneficiaryName], ['Bank', form.bankName]])].map(([label, val], i, arr) => (
                 <div key={label} className={`flex justify-between py-3 ${i < arr.length - 1 ? 'border-b border-divider' : ''}`}>
                   <span className="text-[12px] text-[#64748B]">{label}</span>
                   <span className="text-[12px] font-semibold text-[#0F172A]">{val}</span>
@@ -521,7 +545,21 @@ export default function MerchantBankForm() {
           </>
         )}
 
-        {methodSelected && (
+        {form.paymentMethod === 'USDC_POLYGON' && (
+          <>
+            <SectionTitle>Wallet details</SectionTitle>
+            <Callout color="blue">We transfer USDC (ERC-20) on the Polygon network. Please provide your Polygon-compatible wallet address.</Callout>
+            <Field label="Wallet Address" required error={errors.walletAddress} hint="EVM-compatible address (0x...)" className="mb-4">
+              <Input value={form.walletAddress} onChange={set('walletAddress')} placeholder="0x..." error={errors.walletAddress} />
+            </Field>
+            <div className="grid grid-cols-2 gap-4 mb-4">
+              <Field label="Network"><Input value="Polygon" disabled /></Field>
+              <Field label="Token"><Input value="USDC (ERC-20)" disabled /></Field>
+            </div>
+          </>
+        )}
+
+        {needsBankInfo && (
           <>
             <SectionTitle>Bank information</SectionTitle>
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
@@ -545,7 +583,7 @@ export default function MerchantBankForm() {
           </>
         )}
 
-        {methodSelected && (
+        {needsBankInfo && (
           <>
             <SectionTitle>Beneficiary address</SectionTitle>
             <p className="text-[10px] text-[#64748B] -mt-3 mb-4">Registered address of the account holder</p>
@@ -564,7 +602,7 @@ export default function MerchantBankForm() {
         {methodSelected && (
           <>
             <SectionTitle>Additional information</SectionTitle>
-            <Field label="Proof of Bank Account" required error={errors.file} hint="Upload a bank statement, voided check, or bank letter (PDF, PNG, JPG — max 10MB)" className="mb-4">
+            {!crypto && <Field label="Proof of Bank Account" required error={errors.file} hint="Upload a bank statement, voided check, or bank letter (PDF, PNG, JPG — max 10MB)" className="mb-4">
               {!file ? (
                 <div onDragOver={(e) => e.preventDefault()} onDrop={handleDrop} onClick={() => fileInputRef.current?.click()}
                   className="border border-dashed border-[#CBD5E1] rounded-[12px] p-8 text-center cursor-pointer hover:border-breeze/40 hover:bg-light-blue/30 transition-colors">
@@ -588,7 +626,7 @@ export default function MerchantBankForm() {
                   <button type="button" onClick={removeFile} className="text-alert text-[12px] font-medium hover:opacity-70 transition-colors">Remove</button>
                 </div>
               )}
-            </Field>
+            </Field>}
             <Field label="Payment Reference" hint="Any reference to include with settlements" className="mb-4"><Input value={form.reference} onChange={set('reference')} /></Field>
             <Field label="Notes" className="mb-4">
               <textarea value={form.notes} onChange={set('notes')} rows={3}

@@ -23,4 +23,5 @@ export const PAYMENT_METHODS = [
   { key: "ACH", label: "ACH", desc: "US domestic — 1-3 days" },
   { key: "FEDWIRE", label: "Fedwire", desc: "US domestic — same day" },
   { key: "INTERNATIONAL WIRE", label: "Intl Wire", desc: "SWIFT / cross-border" },
+  { key: "USDC_POLYGON", label: "USDC", desc: "ERC-20 on Polygon" },
 ];
